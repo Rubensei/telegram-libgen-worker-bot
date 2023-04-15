@@ -1,0 +1,23 @@
+{
+  "name": "libgen-worker-bot",
+  "version": "0.1.0",
+  "main": "index.js",
+  "private": true,
+  "scripts": {
+    "start": "wrangler dev",
+    "deploy": "wrangler publish"
+  },
+  "dependencies": {
+    "@cfworker/web": "^1.12.5",
+    "cfworker-middleware-telegraf": "^2.0.2",
+    "telegraf": "^4.12.2"
+  },
+  "devDependencies": {
+    "node-polyfill-webpack-plugin": "^2.0.1",
+    "ts-loader": "^9.4.2",
+    "typescript": "^5.0.4",
+    "webpack": "^5.79.0",
+    "webpack-cli": "^5.0.1",
+    "wrangler": "2.15.1"
+  }
+}
