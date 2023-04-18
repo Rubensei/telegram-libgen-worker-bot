@@ -2,14 +2,6 @@ import {PAGE_SIZE} from "./utils";
 
 const DEFAULT_HOST = 'libgen.is';
 
-const searchUrl = (host: string, query: string, column: string, page: number) => {
-    return `https://${host}/search.php?column=${column}&req=${encodeURIComponent(query)}&view=simple&res=5&open=0&page=${page}`;
-}
-
-const apiUrl = (host: string, ids: string[]) => {
-    return `https://${host}/json.php?ids=${ids.join(",")}&fields=*`;
-}
-
 interface Book {
     id: string;
     title: string;

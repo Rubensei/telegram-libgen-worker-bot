@@ -8,8 +8,8 @@ const PORT = 8080;
 dotenv.config({path: './.dev.vars'});
 
 (async () => {
-    const {url, stop} = tunnel({'--url': `localhost:${PORT}`})
-    const service = await wrangler.unstable_dev('./dist/worker.js', {
+    const {url} = tunnel({'--url': `localhost:${PORT}`})
+    await wrangler.unstable_dev('./dist/worker.js', {
         config: './wrangler.toml',
         port: PORT,
         logLevel: "info",
