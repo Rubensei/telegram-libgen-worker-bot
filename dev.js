@@ -14,7 +14,6 @@ dotenv.config({path: './.dev.vars'});
         port: PORT,
         logLevel: "info",
         vars: process.env,
-        inspect: true,
     });
     const bot = new Telegraf(process.env.BOT_TOKEN);
     await bot.telegram.setWebhook(await url);

@@ -1,6 +1,6 @@
 import {PAGE_SIZE} from "./utils";
 
-const HOST = 'libgen.is';
+const DEFAULT_HOST = 'libgen.is';
 
 const searchUrl = (host: string, query: string, column: string, page: number) => {
     return `https://${host}/search.php?column=${column}&req=${encodeURIComponent(query)}&view=simple&res=5&open=0&page=${page}`;
@@ -59,10 +59,20 @@ class Libgen {
     static async getBookDetails(host: string, id: string): Promise<Book> {
         return (await Libgen.getBooksDetails(host, id))[0];
     }
+
+    static async getMirrors(): Promise<string[]> {
+        return await fetch('https://library.lol')
+            .then((response) => response.text())
+            .then((response) => {
+                return Array.from(response.matchAll(new RegExp('<a.+?href="([^"]+)".+?<\/a>', "g")))
+                    .map((match) => match[1])
+                    .map((url) => new URL(url).host);
+            })
+    }
 }
 
 export {
     Libgen,
     Book,
-    HOST
+    DEFAULT_HOST
 }

@@ -3,7 +3,7 @@ const NodePolyfillPlugin = require('node-polyfill-webpack-plugin');
 
 module.exports = {
     entry: path.resolve(__dirname, 'src/index.ts'),
-    devtool: 'inline-source-map',
+    devtool: 'source-map',
     module: {
         rules: [
             {

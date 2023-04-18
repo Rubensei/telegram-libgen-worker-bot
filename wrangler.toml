@@ -4,7 +4,7 @@ account_id = "a12226b4f52b0e16f7b2a2fa4cde2ca4"
 compatibility_date = "2023-04-15"
 vars = { ENVIRONMENT = "dev" }
 # Requires BOT_TOKEN env var to work
-
+# Setting OWNER_ID enables /mirror command
 [env.prod]
 name = "libgen-worker-bot"
 vars = { ENVIRONMENT = "prod" }

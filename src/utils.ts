@@ -17,7 +17,11 @@ type PagePayload = {
     col: string,
     cov?: number,
 };
-type CallbackPayload = BookIdPayload | PagePayload;
+type MirrorPayload = {
+    type: "m",
+    mirror: string,
+}
+type CallbackPayload = BookIdPayload | PagePayload | MirrorPayload;
 
 function buildBookListMessageAndKeyboard(books: Book[], column: string, query: string, page: number, offset: number, moreBooks: boolean): [string, any[]] {
     let message = "Books:\n";
@@ -80,7 +84,7 @@ function prettyPrintBook(book: Book): string {
 }
 
 export {
-    CallbackPayload, BookIdPayload, PagePayload,
+    CallbackPayload, BookIdPayload, PagePayload, MirrorPayload,
     buildBookListMessageAndKeyboard,
     prettyPrintBook,
     PAGE_SIZE,
