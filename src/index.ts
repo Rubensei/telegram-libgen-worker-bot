@@ -58,7 +58,7 @@ bot.on(message('text'), async (ctx) => {
             return await ctx.telegram.editMessageText(msg.chat.id, msg.message_id, undefined, "Couldn't find any results");
         }
 
-        let [message, buttons] = buildBookListMessageAndKeyboard(books, column, messageTxt, 1, 1, moreBooks);
+        let [message, buttons] = buildBookListMessageAndKeyboard(books, column, query, 1, 1, moreBooks);
 
         let keyboard = Markup.inlineKeyboard([buttons]);
         await ctx.telegram.editMessageText(msg.chat.id, msg.message_id, undefined, message, {
