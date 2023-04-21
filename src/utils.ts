@@ -15,7 +15,6 @@ type PagePayload = {
     page: number,
     off: number,
     col: string,
-    cov?: number,
 };
 type MirrorPayload = {
     type: "m",
@@ -45,7 +44,13 @@ function buildBookListMessageAndKeyboard(books: Book[], column: string, query: s
         buttons.push(Markup.button.callback("⬅️", JSON.stringify(pagePayload)))
     }
     for (const [i, book] of books.entries()) {
-        message += `${i + 1} - <b>${book.title}</b>\n👤 ${book.author}\n🌐 ${book.language}\nYear: ${book.year}, Type: ${book.extension}\n`;
+        const edition = book.edition ? ` (${book.edition} .ed)` : '';
+        message += line(" ", `${i + 1}`, `<b>${book.title}${edition}</b>`);
+        message += line(" ", '👤', book.author);
+        if(book.language) {
+            message += line(" ", '🌐', book.language);
+        }
+        message += line(" ", 'Year:', book.year, ', Type:', book.extension);
         let bookPayload: BookIdPayload = {
             i: book.id,
             page: page,
@@ -56,7 +61,7 @@ function buildBookListMessageAndKeyboard(books: Book[], column: string, query: s
         buttons.push(Markup.button.callback((i + 1).toString(), JSON.stringify(bookPayload)));
     }
 
-    message += `\nPage ${offset + (page-1) * 5} - Searching for: <i>${query}</i>`;
+    message += `\nPage ${offset + (page - 1) * 5} - Searching for: <i>${query}</i>`;
 
     if (moreBooks) {
         let newOffset;
@@ -80,7 +85,14 @@ function buildBookListMessageAndKeyboard(books: Book[], column: string, query: s
 }
 
 function prettyPrintBook(book: Book): string {
-    return `<b>${book.title}<b/>\n${book.author} - ${book.year}\n${book.language ?? ''}\nFormat: ${book.extension}`
+    let message = line(" ",`<b>${book.title}</b>`, book.edition ? `<i>${book.edition} .ed</i>` : '');
+    message += line(" - ", book.author, book.year, book.publisher);
+    message += line(" ", book.language, ...(book.pages ? ['-', book.pages, 'pages'] : []));
+    return message;
+}
+
+function line(separator: string, ...items: string[]): string {
+    return items.filter((item) => item !== undefined && item.length > 0).join(separator) + '\n';
 }
 
 export {

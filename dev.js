@@ -17,6 +17,6 @@ dotenv.config({path: './.dev.vars'});
         inspect: true,
     });
     const bot = new Telegraf(process.env.BOT_TOKEN);
-    await bot.telegram.setWebhook(await url);
+    await bot.telegram.setWebhook(await url, {drop_pending_updates: true});
     await bot.telegram.getWebhookInfo().then(console.log);
 })();

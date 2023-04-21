@@ -7,6 +7,9 @@ interface Book {
     title: string;
     author: string;
     year: string;
+    edition?: string;
+    publisher?: string;
+    pages?: string;
     language?: string;
     extension: string;
     md5: string;

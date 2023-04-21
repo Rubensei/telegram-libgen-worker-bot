@@ -14,9 +14,6 @@ const ALLOWED_COMMANDS = ["/author", "/isbn", "/title"];
 
 const bot = new Telegraf(TOKEN);
 
-// TODO: Remove image preview and use textual message to have fully interactive mode
-// Add result number using index offset and page
-
 bot.on(message('text'), async (ctx) => {
     const messageTxt = ctx.message.text;
     let searchingMsg;
@@ -76,70 +73,68 @@ bot.on(message('text'), async (ctx) => {
 })
 
 bot.on(callbackQuery('data'), async (ctx) => {
-    const chatId = ctx.callbackQuery.message.chat.id;
-    const messageId = ctx.callbackQuery.message.message_id;
-    const payload: CallbackPayload = JSON.parse(ctx.callbackQuery.data);
-    let query = (ctx.callbackQuery.message as any).text?.split("Searching for: ")?.[1];
-    switch (payload.type) {
-        case "b":
-            const bookId = payload.i;
+    try {
+        const chatId = ctx.callbackQuery.message.chat.id;
+        const messageId = ctx.callbackQuery.message.message_id;
+        const payload: CallbackPayload = JSON.parse(ctx.callbackQuery.data);
+        let query = (ctx.callbackQuery.message as any).text?.split("Searching for: ")?.[1];
+        switch (payload.type) {
+            case "b":
+                const bookId = payload.i;
+                delete payload.i;
 
-            const book: Book = await Libgen.getBookDetails(LIBGEN_HOST, bookId);
-            const libLolUrl = `https://library.lol/main/${book.md5}`;
-            const downloadButton = Markup.button.url(`Download (${book.extension})`, libLolUrl);
-            const backPayload: PagePayload = {
-                ...payload,
-                type: "p",
-            };
-            if (book.coverurl != null) {
-                backPayload.cov = 1;
-                await ctx.replyWithPhoto(`https://library.lol/covers/${book.coverurl}`, {
-                    reply_markup: Markup.inlineKeyboard([Markup.button.callback(`⬅️`, JSON.stringify(backPayload)), downloadButton]).reply_markup,
-                    caption: query
+                const book: Book = await Libgen.getBookDetails(LIBGEN_HOST, bookId);
+                const libLolUrl = `https://library.lol/main/${book.md5}`;
+                const downloadButton = Markup.button.url(`Download (${book.extension})`, libLolUrl);
+                const backPayload: PagePayload = {
+                    ...payload,
+                    type: "p",
+                };
+                const backButton = Markup.button.callback(`⬅️`, JSON.stringify(backPayload));
+
+                let message = prettyPrintBook(book);
+                if (book.coverurl != null) {
+                    message+=`<a href="https://library.lol/covers/${book.coverurl}">&#8205;</a>\n`;
+                }
+                message += `\nSearching for: <i>${query}</i>`;
+
+                await ctx.telegram.editMessageText(chatId, messageId, null, message, {
+                    disable_web_page_preview: false,
+                    reply_markup: Markup.inlineKeyboard([backButton, downloadButton]).reply_markup,
+                    parse_mode: 'HTML',
                 });
-            } else {
-                await ctx.replyWithHTML(prettyPrintBook(book), {
-                    reply_markup: Markup.inlineKeyboard([Markup.button.callback(`⬅️`, JSON.stringify(backPayload)), downloadButton]).reply_markup,
-                });
-            }
-            break;
-        case "p":
-            if (query == null) {
-                query = (ctx.callbackQuery.message as any).caption;
-            }
-            if (query != null) {
-                const [newBooks, moreBooks] = await Libgen.searchBooks(LIBGEN_HOST, payload.col, query, payload.page, payload.off);
-                let [message, buttons] = buildBookListMessageAndKeyboard(newBooks, payload.col, query, payload.page, payload.off, moreBooks);
-                let keyboard = Markup.inlineKeyboard([buttons]);
-                if (payload.cov != null) {
-                    await ctx.replyWithHTML(message, {
-                        reply_markup: keyboard.reply_markup
-                    })
-                } else {
-                    await ctx.telegram.editMessageText(chatId, messageId, undefined, message, {
+                break;
+            case "p":
+                if (query != null) {
+                    const [newBooks, moreBooks] = await Libgen.searchBooks(LIBGEN_HOST, payload.col, query, payload.page, payload.off);
+                    let [message, buttons] = buildBookListMessageAndKeyboard(newBooks, payload.col, query, payload.page, payload.off, moreBooks);
+                    let keyboard = Markup.inlineKeyboard([buttons]);
+                    await ctx.telegram.editMessageText(chatId, messageId, null, message, {
                         reply_markup: keyboard.reply_markup,
                         parse_mode: 'HTML',
                     });
+                } else {
+                    await ctx.replyWithHTML(`It's not possible to continue the interactive search.\nSearch again in a new message`);
                 }
-            } else {
-                await ctx.replyWithHTML(`It's not possible to continue the interactive search.\nSearch again in a new message`);
-            }
-            break;
-        case "m":
-            try {
-                const host = await ctx.telegram.getWebhookInfo().then((whInfo) => {
-                    return new URL(whInfo.url).host;
-                });
-                // Forced timeout to avoid `too many requests`
-                await new Promise((resolve) => {
-                    setTimeout(() => resolve(ctx.telegram.setWebhook(`https://${host}/${payload.mirror}`)), 1e3);
-                });
-                await ctx.replyWithHTML(`Updated mirror to ${payload.mirror}`);
-            } catch (e) {
-                console.log(e);
-                return await ctx.reply(`Something went wrong updating the mirror to ${payload.mirror}`);
-            }
-            break;
+                break;
+            case "m":
+                try {
+                    const host = await ctx.telegram.getWebhookInfo().then((whInfo) => {
+                        return new URL(whInfo.url).host;
+                    });
+                    // Forced timeout to avoid `too many requests`
+                    await new Promise((resolve) => {
+                        setTimeout(() => resolve(ctx.telegram.setWebhook(`https://${host}/${payload.mirror}`)), 1e3);
+                    });
+                    await ctx.replyWithHTML(`Updated mirror to ${payload.mirror}`);
+                } catch (e) {
+                    console.log(e);
+                    return await ctx.reply(`Something went wrong updating the mirror to ${payload.mirror}`);
+                }
+                break;
+        }
+    } catch (e) {
+        console.log(e);
     }
 })
 
