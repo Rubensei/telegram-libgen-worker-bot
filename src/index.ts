@@ -94,7 +94,7 @@ bot.on(callbackQuery('data'), async (ctx) => {
 
                 let message = prettyPrintBook(book);
                 if (book.coverurl != null) {
-                    message+=`<a href="https://library.lol/covers/${book.coverurl}">&#8205;</a>\n`;
+                    message += `<a href="https://library.lol/covers/${book.coverurl}">&#8205;</a>\n`;
                 }
                 message += `\nSearching for: <i>${query}</i>`;
 
@@ -123,9 +123,8 @@ bot.on(callbackQuery('data'), async (ctx) => {
                         return new URL(whInfo.url).host;
                     });
                     // Forced timeout to avoid `too many requests`
-                    await new Promise((resolve) => {
-                        setTimeout(() => resolve(ctx.telegram.setWebhook(`https://${host}/${payload.mirror}`)), 1e3);
-                    });
+                    await new Promise((resolve) => setTimeout(resolve, 1e3));
+                    await ctx.telegram.setWebhook(`https://${host}/${payload.mirror}`);
                     await ctx.replyWithHTML(`Updated mirror to ${payload.mirror}`);
                 } catch (e) {
                     console.log(e);
